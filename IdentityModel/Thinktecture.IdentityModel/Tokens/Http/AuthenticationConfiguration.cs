@@ -85,6 +85,11 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public void AddSimpleWebToken(string issuer, string audience, string signingKey, AuthenticationOptions options)
         {
+            AddSimpleWebToken(issuer, new string[]{audience}, signingKey, options);
+        }
+
+        public void AddSimpleWebToken(string issuer, string[] audiences, string signingKey, AuthenticationOptions options)
+        {
             var config = new SecurityTokenHandlerConfiguration();
             var registry = new WebTokenIssuerNameRegistry();
             registry.AddTrustedIssuer(issuer, issuer);
@@ -94,8 +99,11 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             issuerResolver.AddSigningKey(issuer, signingKey);
             config.IssuerTokenResolver = issuerResolver;
 
-            config.AudienceRestriction.AllowedAudienceUris.Add(new Uri(audience));
-
+            foreach (var audience in audiences)
+            {
+                config.AudienceRestriction.AllowedAudienceUris.Add(new Uri(audience));
+            }
+            
             var handler = new SimpleWebTokenHandler();
             handler.Configuration = config;
 
@@ -108,6 +116,11 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public void AddJsonWebToken(string issuer, string audience, string signingKey, AuthenticationOptions options)
         {
+            AddJsonWebToken(issuer, new[] {audience}, signingKey, options);
+        }
+
+        public void AddJsonWebToken(string issuer, string[] audiences, string signingKey, AuthenticationOptions options)
+        {
             var config = new SecurityTokenHandlerConfiguration();
             var registry = new WebTokenIssuerNameRegistry();
             registry.AddTrustedIssuer(issuer, issuer);
@@ -117,8 +130,11 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             issuerResolver.AddSigningKey(issuer, signingKey);
             config.IssuerTokenResolver = issuerResolver;
 
-            config.AudienceRestriction.AllowedAudienceUris.Add(new Uri(audience));
-
+            foreach (var audience in audiences)
+            {
+                config.AudienceRestriction.AllowedAudienceUris.Add(new Uri(audience)); 
+            }
+            
             var handler = new JsonWebTokenHandler();
             handler.Configuration = config;
 

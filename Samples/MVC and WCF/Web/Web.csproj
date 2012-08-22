@@ -241,7 +241,7 @@
     <Content Include="Views\User\Delegation.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\IdentityModel\Thinktecture.IdentityModel\Thinktecture.IdentityModel.csproj">
+    <ProjectReference Include="..\..\..\IdentityModel\Thinktecture.IdentityModel\Thinktecture.IdentityModel.45.csproj">
       <Project>{ac9a74df-4aab-43c8-b0ed-b7602721e545}</Project>
       <Name>Thinktecture.IdentityModel</Name>
     </ProjectReference>
