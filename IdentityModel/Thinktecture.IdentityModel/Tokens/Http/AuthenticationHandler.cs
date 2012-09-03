@@ -13,7 +13,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Http;
+using System.Web.Http.Dispatcher;
+using System.Web.Http.Hosting;
 using Thinktecture.IdentityModel;
+using Thinktecture.IdentityModel.Constants;
 
 namespace Thinktecture.IdentityModel.Tokens.Http
 {
@@ -21,9 +25,14 @@ namespace Thinktecture.IdentityModel.Tokens.Http
     {
         HttpAuthentication _authN;
 
-        public AuthenticationHandler(AuthenticationConfiguration configuration)
+        public AuthenticationHandler(AuthenticationConfiguration configuration, HttpConfiguration httpConfiguration = null)
         {
             _authN = new HttpAuthentication(configuration);
+
+            if (httpConfiguration != null)
+            {
+                InnerHandler = new HttpControllerDispatcher(httpConfiguration);
+            }
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -56,9 +65,13 @@ namespace Thinktecture.IdentityModel.Tokens.Http
                     SetPrincipal(principal);
                 }
             }
-            catch(SecurityTokenValidationException)
+            catch (SecurityTokenValidationException)
             {
-                return SendUnauthorizedResponse();
+                return SendUnauthorizedResponse(request);
+            }
+            catch (SecurityTokenException)
+            {
+                return SendUnauthorizedResponse(request);
             }
 
             return base.SendAsync(request, cancellationToken).ContinueWith(
@@ -69,18 +82,20 @@ namespace Thinktecture.IdentityModel.Tokens.Http
                     if (response.StatusCode == HttpStatusCode.Unauthorized)
                     {
                         SetAuthenticateHeader(response);
+                        SetNoRedirectMarker(request);
                     }
 
                     return response;
                 });
         }
 
-        private Task<HttpResponseMessage> SendUnauthorizedResponse()
+        private Task<HttpResponseMessage> SendUnauthorizedResponse(HttpRequestMessage request)
         {
             return Task<HttpResponseMessage>.Factory.StartNew(() =>
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Unauthorized);
                 SetAuthenticateHeader(response);
+                SetNoRedirectMarker(request);
 
                 return response;
             });
@@ -102,7 +117,26 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         protected virtual void SetAuthenticateHeader(HttpResponseMessage response)
         {
-            response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue(_authN.Configuration.DefaultAuthenticationScheme));
+            if (_authN.Configuration.SendAuthenticateResponseHeader)
+            {
+                response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue(_authN.Configuration.DefaultAuthenticationScheme));
+            }
+        }
+
+        protected virtual void SetNoRedirectMarker(HttpRequestMessage request)
+        {
+            if (_authN.Configuration.SetNoRedirectMarker)
+            {
+                if (HttpContext.Current != null)
+                {
+                    HttpContext.Current.Items[Internal.NoRedirectLabel] = true;
+                }
+                else if (request.Properties["MS_HttpContext"] != null)
+                {
+                    var context = request.Properties["MS_HttpContext"] as HttpContextWrapper;
+                    context.Items[Internal.NoRedirectLabel] = true;
+                }
+            }
         }
 
         protected virtual void SetPrincipal(ClaimsPrincipal principal)

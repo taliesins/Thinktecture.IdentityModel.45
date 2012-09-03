@@ -1,16 +1,15 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Thinktecture.IdentityModel")]
-[assembly: AssemblyDescription("Helper library for identity and access control in .NET 4.5")]
+[assembly: AssemblyTitle("BasicAuthenticationClient")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Thinktecture")]
-[assembly: AssemblyProduct("Thinktecture.IdentityModel")]
-[assembly: AssemblyCopyright("Copyright © Dominick Baier & Brock Allen")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("BasicAuthenticationClient")]
+[assembly: AssemblyCopyright("Copyright ©  2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("2e3a2e3f-729c-42a4-9aee-48f2e14ae134")]
+[assembly: Guid("9dc9d27c-73ff-4c70-8e96-0dd6d2cea5e5")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,7 +31,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.0.9.0")]
-[assembly: AssemblyFileVersion("2.0.9.0")]
-
-[assembly: CLSCompliant(true)]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
