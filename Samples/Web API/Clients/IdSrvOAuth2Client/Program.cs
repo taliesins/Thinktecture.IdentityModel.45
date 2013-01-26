@@ -40,7 +40,7 @@ namespace IdSrvOAuth2Client
             "Requesting token".ConsoleYellow();
 
             var client = new OAuth2Client(_oauth2Address);
-            var response = client.RequestAccessTokenUserName("bob", "abc!123", Constants.Realm);
+            var response = client.RequestAccessTokenUserName("taliesins", "password12.", Constants.Realm);
 
             return response.AccessToken;
         }

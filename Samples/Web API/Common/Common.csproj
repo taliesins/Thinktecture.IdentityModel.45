@@ -55,7 +55,7 @@
       <Name>Thinktecture.IdentityModel.45</Name>
     </ProjectReference>
     <ProjectReference Include="..\Resources\Resources.csproj">
-      <Project>{78d715ba-07e5-4067-8f56-05bf29388fde}</Project>
+      <Project>{78D715BA-07E5-4067-8F56-05BF29388FDE}</Project>
       <Name>Resources</Name>
     </ProjectReference>
   </ItemGroup>

@@ -4,7 +4,7 @@
     {
         public const string WebHost = "roadie";
         public const string SelfHost = "roadie:9000";
-        public const string IdSrv = "identity.thinktecture.com/idsrvsample";
+        public const string IdSrv = "ip.talifun.com";
         public const string ACS = "ttacssample.accesscontrol.windows.net";
         public const string ADFS = "adfs.leastprivilege.vm";
 
@@ -12,11 +12,11 @@
         public const string IdSrvSamlSigningKeyThumbprint = "A1EED7897E55388FCE60FEF1A1EED81FF1CBAEC6";
         public const string AcsSymmetricSigningKey = "yFvxu8Xkmo/xBSSPrzqZLSAiB4lgjR4PIi0Bn1RsUDI=";
 
-        public const string IdSrvIssuerName = "http://identity.thinktecture.com/trust/sample";
+        public const string IdSrvIssuerName = "http://ip.talifun.com/trust/issue";
 
         public const string AdfsSamlSigningKeyThumbprint = "8EC7F962CC083FF7C5997D8A4D5ED64B12E4C174";
 
-        public const string Realm = "https://samples.thinktecture.com/webapisecurity/";
+        public const string Realm = "https://api.talifun.com/";
         
         public const string WebHostBaseAddress = "https://" + WebHost + "/webapisecurity/api/";
         public const string WebHostPerRouteBaseAddress = "https://" + WebHost + "/webapisecurity/api3/";

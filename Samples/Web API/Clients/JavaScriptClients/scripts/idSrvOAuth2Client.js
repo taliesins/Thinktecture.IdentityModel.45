@@ -1,5 +1,5 @@
-﻿var stsEndpoint = 'https://identity.thinktecture.com/idsrvsample/issue/oauth2',
-    scope = 'https://samples.thinktecture.com/webapisecurity/',
+﻿var stsEndpoint = 'https://ip.talifun.com/issue/oauth2',
+    scope = 'https://api.talifun.com/',
     serviceEndpoint = 'https://adfs.leastprivilege.vm/webapisecurity/api/identity',
     authN,
     token;
