@@ -7,11 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IdentityModel.Tokens;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
-using Thinktecture.IdentityModel;
 
 namespace Thinktecture.IdentityModel.Tokens.Http
 {
@@ -109,6 +106,11 @@ namespace Thinktecture.IdentityModel.Tokens.Http
                 new Claim(ClaimTypes.AuthenticationMethod, AuthenticationMethods.Password),
                 AuthenticationInstantClaim.Now
             };
+
+            if (RetainPassword)
+            {
+                claims.Add(new Claim("password", unToken.Password));
+            }
 
             var identity = new ClaimsIdentity(claims, "Basic");
 

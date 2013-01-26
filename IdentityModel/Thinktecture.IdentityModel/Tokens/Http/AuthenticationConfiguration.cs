@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Thinktecture.IdentityModel.Tokens.Http
 {
@@ -23,12 +21,12 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public List<AuthenticationOptionMapping> Mappings { get; set; }
         public string DefaultAuthenticationScheme { get; set; }
-        public bool SendAuthenticateResponseHeader { get; set; }
+        public bool SendWwwAuthenticateResponseHeader { get; set; }
         public ClaimsAuthenticationManager ClaimsAuthenticationManager { get; set; }
         public bool InheritHostClientIdentity { get; set; }
-        public bool SetNoRedirectMarker { get; set; }
         public bool EnableSessionToken { get; set; }
         public SessionTokenConfiguration SessionToken { get; set; }
+        public bool RequireSsl { get; set; }
 
         #region HasMapping Properties
         public bool HasAuthorizationHeaderMapping
@@ -60,25 +58,24 @@ namespace Thinktecture.IdentityModel.Tokens.Http
         public AuthenticationConfiguration()
         {
             Mappings = new List<AuthenticationOptionMapping>();
-            DefaultAuthenticationScheme = "unspecified";
-            SendAuthenticateResponseHeader = true;
-            SetNoRedirectMarker = false;
-            InheritHostClientIdentity = false;
+            DefaultAuthenticationScheme = string.Empty;
+            SendWwwAuthenticateResponseHeader = true;
+            InheritHostClientIdentity = true;
+            RequireSsl = true;
 
             EnableSessionToken = false;
             SessionToken = new SessionTokenConfiguration();
         }
 
-        public void AddAccessKey(SimpleSecurityTokenHandler handler, AuthenticationOptions options)
+        public void SetDefaultAuthenticationScheme(string scheme)
         {
-            AddMapping(new AuthenticationOptionMapping
+            if (string.IsNullOrWhiteSpace(DefaultAuthenticationScheme))
             {
-                TokenHandler = new SecurityTokenHandlerCollection { handler },
-                Options = options
-            });
+                DefaultAuthenticationScheme = scheme;
+            }
         }
 
-        public void AddAccessKey(SimpleSecurityTokenHandler.ValidateTokenDelegate validateTokenDelegate, AuthenticationOptions options)
+        public void AddMapping(AuthenticationOptionMapping mapping)
         {
             AddMapping(new AuthenticationOptionMapping
             {

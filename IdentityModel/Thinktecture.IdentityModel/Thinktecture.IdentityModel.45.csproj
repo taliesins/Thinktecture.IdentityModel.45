@@ -161,9 +161,14 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -190,8 +195,32 @@
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Helpers, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.20710.0\lib\net40\System.Web.Helpers.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.4.0.20710.0\lib\net40\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.4.0.20710.0\lib\net40\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.Razor.2.0.20710.0\lib\net40\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.20710.0\lib\net40\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.20710.0\lib\net40\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.20710.0\lib\net40\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq">
@@ -204,8 +233,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authorization\MVC\ClaimsAuthorizeAttribute.cs" />
+    <Compile Include="Authorization\WebApi\ClaimsAuthorizeAttribute.cs" />
     <Compile Include="Base64Url.cs" />
     <Compile Include="Constants\Internal.cs" />
+    <Compile Include="Extensions\HttpClientExtensions.cs" />
     <Compile Include="Http\Cors\CorsAccessRequest.cs" />
     <Compile Include="Http\Cors\CorsAccessResponse.cs" />
     <Compile Include="Http\Cors\CorsConfiguration.cs" />
@@ -230,6 +262,7 @@
     <Compile Include="Http\Cors\WebApi\WebApiCorsConfiguration.cs" />
     <Compile Include="Http\Cors\WebApi\WebApiHttpRequest.cs" />
     <Compile Include="Http\Cors\WebApi\WebApiHttpResponse.cs" />
+    <Compile Include="Diagnostics\Area.cs" />
     <Compile Include="Principal.cs" />
     <Compile Include="Clients\AccessControlService\IdentityProviderDiscoveryClient.cs" />
     <Compile Include="Clients\AccessControlService\IdentityProviderInformation.cs" />
@@ -243,6 +276,9 @@
     <Compile Include="Constants\TokenTypes.cs" />
     <Compile Include="Clients\AccessTokenResponse.cs" />
     <Compile Include="Extensions\HttpRequestMessageExtensions.cs" />
+    <Compile Include="Http\RequireHttpsHandler.cs" />
+    <Compile Include="Tokens\Http\AuthenticationConfigurationExtensionsCore.cs" />
+    <Compile Include="Tokens\Http\AuthenticationException.cs" />
     <Compile Include="Tokens\Http\BasicAuthenticationHeaderValue.cs" />
     <Compile Include="Clients\OAuth2Client.cs" />
     <Compile Include="Tokens\Http\AuthenticationHandler.cs" />
@@ -255,15 +291,20 @@
     <Compile Include="Tokens\Http\AuthenticationConfiguration.cs" />
     <Compile Include="Clients\WrapClient.cs" />
     <Compile Include="Tokens\Http\ClientCertificateHandler.cs" />
+    <Compile Include="Tokens\Http\HttpRequestSecurityToken.cs" />
+    <Compile Include="Tokens\Http\HttpRequestSecurityTokenHandler.cs" />
     <Compile Include="Tokens\Http\SessionTokenConfiguration.cs" />
-    <Compile Include="Authorization\WebApi\ApiAuthorizeAttribute.cs" />
+    <Compile Include="Authorization\Todo\ApiAuthorizeAttribute.cs" />
     <Compile Include="Authorization\DefaultPolicy.cs" />
-    <Compile Include="Authorization\WebApi\GlobalAuthorization.cs" />
-    <Compile Include="Authorization\WebApi\HttpAuthorizationContext.cs" />
-    <Compile Include="Authorization\WebApi\HttpClaimsAuthorizationManager.cs" />
-    <Compile Include="Authorization\WebApi\HttpConfigurationExtensions.cs" />
-    <Compile Include="Authorization\WebApi\IAuthorizationManager.cs" />
-    <Compile Include="Authorization\WebApi\PerControllerAuthorization.cs" />
+    <Compile Include="Authorization\Todo\GlobalAuthorization.cs" />
+    <Compile Include="Authorization\Todo\HttpAuthorizationContext.cs" />
+    <Compile Include="Authorization\Todo\HttpClaimsAuthorizationManager.cs" />
+    <Compile Include="Authorization\Todo\HttpConfigurationExtensions.cs" />
+    <Compile Include="Authorization\Todo\IAuthorizationManager.cs" />
+    <Compile Include="Authorization\Todo\PerControllerAuthorization.cs" />
+    <Compile Include="Diagnostics\Tracing.cs" />
+    <Compile Include="Tokens\MetadataBasedIssuerNameRegistry.cs" />
+    <Compile Include="Tokens\WrappedSecurityToken.cs" />
     <Compile Include="Web\ProtectionMode.cs" />
     <Compile Include="WSTrust\CertificateWSTrustBindings.cs" />
     <Compile Include="WSTrust\IssuedTokenWSTrustBinding.cs" />
