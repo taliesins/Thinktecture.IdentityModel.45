@@ -75,14 +75,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             }
         }
 
-        public void AddMapping(AuthenticationOptionMapping mapping)
-        {
-            AddMapping(new AuthenticationOptionMapping
-            {
-                TokenHandler = new SecurityTokenHandlerCollection { new SimpleSecurityTokenHandler(validateTokenDelegate) },
-                Options = options
-            });
-        }
+
 
         public void AddSimpleWebToken(string issuer, string audience, string signingKey, AuthenticationOptions options)
         {
@@ -189,7 +182,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             });
         }
 
-        private void AddMapping(AuthenticationOptionMapping mapping)
+        public void AddMapping(AuthenticationOptionMapping mapping)
         {
             var hit = from m in Mappings
                       where m.Options.RequestType == mapping.Options.RequestType &&

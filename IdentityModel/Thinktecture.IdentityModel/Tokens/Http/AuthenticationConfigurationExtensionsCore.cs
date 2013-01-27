@@ -23,6 +23,8 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public static void AddAccessKey(this AuthenticationConfiguration configuration, SimpleSecurityTokenHandler.ValidateTokenDelegate validateTokenDelegate, AuthenticationOptions options)
         {
+            
+
             configuration.AddMapping(new AuthenticationOptionMapping
             {
                 TokenHandler = new SecurityTokenHandlerCollection { new SimpleSecurityTokenHandler(validateTokenDelegate) },
@@ -43,8 +45,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
             config.AudienceRestriction.AllowedAudienceUris.Add(new Uri(audience));
 
-            var handler = new SimpleWebTokenHandler();
-            handler.Configuration = config;
+            var handler = new SimpleWebTokenHandler {Configuration = config};
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
@@ -66,8 +67,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
             config.AudienceRestriction.AllowedAudienceUris.Add(new Uri(audience));
 
-            var handler = new JsonWebTokenHandler();
-            handler.Configuration = config;
+            var handler = new JsonWebTokenHandler {Configuration = config};
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
@@ -83,8 +83,8 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public static void AddBasicAuthentication(this AuthenticationConfiguration configuration, BasicAuthenticationSecurityTokenHandler.ValidateUserNameCredentialDelegate validationDelegate, bool retainPassword = false)
         {
-            var handler = new BasicAuthenticationSecurityTokenHandler(validationDelegate);
-            handler.RetainPassword = retainPassword;
+            var handler = new BasicAuthenticationSecurityTokenHandler(validationDelegate)
+                {RetainPassword = retainPassword};
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
@@ -97,8 +97,8 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public static void AddBasicAuthentication(this AuthenticationConfiguration configuration, BasicAuthenticationSecurityTokenHandler.ValidateUserNameCredentialDelegate validationDelegate, AuthenticationOptions options, bool retainPassword = false)
         {
-            var handler = new BasicAuthenticationSecurityTokenHandler(validationDelegate);
-            handler.RetainPassword = retainPassword;
+            var handler = new BasicAuthenticationSecurityTokenHandler(validationDelegate)
+                {RetainPassword = retainPassword};
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
@@ -142,8 +142,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public static void AddSaml2(this AuthenticationConfiguration configuration, SecurityTokenHandlerConfiguration handlerConfiguration, AuthenticationOptions options)
         {
-            var handler = new HttpSaml2SecurityTokenHandler();
-            handler.Configuration = handlerConfiguration;
+            var handler = new HttpSaml2SecurityTokenHandler {Configuration = handlerConfiguration};
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
@@ -154,8 +153,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public static void AddSaml11(this AuthenticationConfiguration configuration, SecurityTokenHandlerConfiguration handlerConfiguration, AuthenticationOptions options)
         {
-            var handler = new HttpSamlSecurityTokenHandler();
-            handler.Configuration = handlerConfiguration;
+            var handler = new HttpSamlSecurityTokenHandler {Configuration = handlerConfiguration};
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
