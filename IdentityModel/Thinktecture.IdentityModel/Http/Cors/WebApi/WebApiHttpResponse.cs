@@ -7,18 +7,18 @@ using System.Net.Http;
 
 namespace Thinktecture.IdentityModel.Http.Cors.WebApi
 {
-    class WebApiHttpResponse : IHttpResponseWrapper
+    public class WebApiHttpResponse : IHttpResponseWrapper
     {
-        HttpResponseMessage response;
+        readonly HttpResponseMessage _response;
 
         public WebApiHttpResponse(HttpResponseMessage response)
         {
-            this.response = response;
+            this._response = response;
         }
 
         public void AddHeader(string name, string value)
         {
-            this.response.Headers.Add(name, value);
+            this._response.Headers.Add(name, value);
         }
     }
 }

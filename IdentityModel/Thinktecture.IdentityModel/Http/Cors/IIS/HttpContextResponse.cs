@@ -7,17 +7,17 @@ using System.Web;
 
 namespace Thinktecture.IdentityModel.Http.Cors.IIS
 {
-    class HttpContextResponse : IHttpResponseWrapper
+    public class HttpContextResponse : IHttpResponseWrapper
     {
-        HttpResponseBase response;
+        readonly HttpResponseBase _response;
         public HttpContextResponse(HttpResponseBase response)
         {
-            this.response = response;
+            this._response = response;
         }
 
         public void AddHeader(string name, string value)
         {
-            response.AddHeader(name, value);
+            _response.AddHeader(name, value);
         }
     }
 }
