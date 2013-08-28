@@ -51,10 +51,9 @@ namespace Thinktecture.IdentityModel.Tokens.Http
                 {
                     Tracing.Information(Area.HttpAuthentication, "Request rejected because it is not over HTTPS.");
 
-                    var forbiddenResponse =
-                        request.CreateResponse(HttpStatusCode.Forbidden);
-
+                    var forbiddenResponse = request.CreateErrorResponse(HttpStatusCode.Forbidden, "HTTPS Required.");
                     forbiddenResponse.ReasonPhrase = "HTTPS Required.";
+
                     return forbiddenResponse;
                 }
             }
@@ -121,7 +120,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         private HttpResponseMessage SendAuthenticationExceptionResponse(AuthenticationException aex, HttpRequestMessage request)
         {
-            var response = request.CreateResponse(aex.StatusCode);
+            var response = request.CreateErrorResponse(aex.StatusCode, aex.ReasonPhrase);
             response.ReasonPhrase = aex.ReasonPhrase;
 
             if (aex.StatusCode == HttpStatusCode.Unauthorized)
@@ -134,7 +133,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         private HttpResponseMessage SendUnauthorizedResponse(HttpRequestMessage request)
         {
-            var unauthorizedResponse = request.CreateResponse(HttpStatusCode.Unauthorized);
+            var unauthorizedResponse = request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Unauthorized.");
 
             SetAuthenticateHeader(unauthorizedResponse);
             unauthorizedResponse.ReasonPhrase = "Unauthorized.";

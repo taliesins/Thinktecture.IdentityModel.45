@@ -20,7 +20,7 @@ namespace Thinktecture.IdentityModel.Http
             if (request.RequestUri.Scheme != Uri.UriSchemeHttps)
             {
                 var forbiddenResponse =
-                    request.CreateResponse(HttpStatusCode.Forbidden);
+                    request.CreateErrorResponse(HttpStatusCode.Forbidden, "HTTPS Required");
 
                 forbiddenResponse.ReasonPhrase = "HTTPS Required";
                 return Task.FromResult<HttpResponseMessage>(forbiddenResponse);
