@@ -1,11 +1,14 @@
 ﻿/*
- * Copyright (c) Dominick Baier.  All rights reserved.
+ * Copyright (c) Dominick Baier, Brock Allen.  All rights reserved.
  * see license.txt
  */
 
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Selectors;
 using System.IdentityModel.Tokens;
+using System.Security.Cryptography.X509Certificates;
+using System.ServiceModel.Security.Tokens;
 using Thinktecture.IdentityModel.Constants;
 
 namespace Thinktecture.IdentityModel.Tokens.Http
@@ -17,7 +20,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             configuration.AddMapping(new AuthenticationOptionMapping
             {
                 TokenHandler = new SecurityTokenHandlerCollection { handler },
-                Options = options
+                Options = options,
             });
         }
 
@@ -28,60 +31,124 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             configuration.AddMapping(new AuthenticationOptionMapping
             {
                 TokenHandler = new SecurityTokenHandlerCollection { new SimpleSecurityTokenHandler(validateTokenDelegate) },
-                Options = options
+                Options = options,
             });
         }
 
-        public static void AddSimpleWebToken(this AuthenticationConfiguration configuration, string issuer, string audience, string signingKey, AuthenticationOptions options)
+        public static void AddJsonWebToken(
+            this AuthenticationConfiguration configuration, 
+            string issuer, 
+            string audience, 
+            string signingKey, 
+            Dictionary<string, string> claimMappings = null)
         {
-            var config = new SecurityTokenHandlerConfiguration();
-            var registry = new WebTokenIssuerNameRegistry();
-            registry.AddTrustedIssuer(issuer, issuer);
-            config.IssuerNameRegistry = registry;
+            var validationParameters = new TokenValidationParameters()
+            {
+                AllowedAudience = audience,
+                SigningToken = new BinarySecretSecurityToken(Convert.FromBase64String(signingKey)),
+                ValidIssuer = issuer,
+            };
 
-            var issuerResolver = new WebTokenIssuerTokenResolver();
-            issuerResolver.AddSigningKey(issuer, signingKey);
-            config.IssuerTokenResolver = issuerResolver;
+            configuration.AddJsonWebToken(
+                validationParameters,
+                AuthenticationOptions.ForAuthorizationHeader(JwtConstants.Bearer),
+                AuthenticationScheme.SchemeOnly(JwtConstants.Bearer),
+                claimMappings);
+        }
 
-            config.AudienceRestriction.AllowedAudienceUris.Add(new Uri(audience));
+        public static void AddJsonWebToken(
+            this AuthenticationConfiguration configuration,
+            string issuer,
+            string audience,
+            string signingKey,
+            string scheme,
+            Dictionary<string, string> claimMappings = null)
+        {
+            var validationParameters = new TokenValidationParameters()
+            {
+                AllowedAudience = audience,
+                SigningToken = new BinarySecretSecurityToken(Convert.FromBase64String(signingKey)),
+                ValidIssuer = issuer,
+            };
 
             var handler = new SimpleWebTokenHandler {Configuration = config};
 
-            configuration.AddMapping(new AuthenticationOptionMapping
+        public static void AddJsonWebToken(
+            this AuthenticationConfiguration configuration, 
+            string issuer, 
+            string audience, 
+            X509Certificate2 signingCertificate, 
+            Dictionary<string, string> claimMappings = null)
+        {
+            var validationParameters = new TokenValidationParameters()
             {
-                TokenHandler = new SecurityTokenHandlerCollection { handler },
-                Options = options
-            });
+                AllowedAudience = audience,
+                SigningToken = new X509SecurityToken(signingCertificate),
+                ValidIssuer = issuer,
+            };
+
+            configuration.AddJsonWebToken(
+                validationParameters,
+                AuthenticationOptions.ForAuthorizationHeader(JwtConstants.Bearer),
+                AuthenticationScheme.SchemeOnly(JwtConstants.Bearer),
+                claimMappings);
         }
 
-        public static void AddJsonWebToken(this AuthenticationConfiguration configuration, string issuer, string audience, string signingKey, AuthenticationOptions options)
+        public static void AddJsonWebToken(
+            this AuthenticationConfiguration configuration,
+            string issuer,
+            string audience,
+            X509Certificate2 signingCertificate,
+            string scheme,
+            Dictionary<string, string> claimMappings = null)
         {
-            var config = new SecurityTokenHandlerConfiguration();
-            var registry = new WebTokenIssuerNameRegistry();
-            registry.AddTrustedIssuer(issuer, issuer);
-            config.IssuerNameRegistry = registry;
+            var validationParameters = new TokenValidationParameters()
+            {
+                AllowedAudience = audience,
+                SigningToken = new X509SecurityToken(signingCertificate),
+                ValidIssuer = issuer,
+            };
 
-            var issuerResolver = new WebTokenIssuerTokenResolver();
-            issuerResolver.AddSigningKey(issuer, signingKey);
-            config.IssuerTokenResolver = issuerResolver;
+            configuration.AddJsonWebToken(
+                validationParameters,
+                AuthenticationOptions.ForAuthorizationHeader(scheme),
+                AuthenticationScheme.SchemeOnly(scheme),
+                claimMappings);
+        }
 
-            config.AudienceRestriction.AllowedAudienceUris.Add(new Uri(audience));
+        public static void AddJsonWebToken(
+            this AuthenticationConfiguration configuration, 
+            TokenValidationParameters validationParameters,
+            AuthenticationOptions options,
+            AuthenticationScheme scheme,
+            Dictionary<string, string> claimMappings = null)
+        {
+            var handler = new JwtSecurityTokenHandlerWrapper(validationParameters, claimMappings);
 
             var handler = new JsonWebTokenHandler {Configuration = config};
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
                 TokenHandler = new SecurityTokenHandlerCollection { handler },
-                Options = options
+                Options = options,
+                Scheme = scheme
             });
         }
 
-        public static void AddJsonWebToken(this AuthenticationConfiguration configuration, string issuer, string audience, string signingKey)
+        public static void AddBasicAuthentication(this AuthenticationConfiguration configuration, BasicAuthenticationSecurityTokenHandler.ValidateUserNameCredentialDelegate validationDelegate, string realm = "localhost", bool retainPassword = false)
         {
-            configuration.AddJsonWebToken(issuer, audience, signingKey, AuthenticationOptions.ForAuthorizationHeader(JwtConstants.Bearer));
+            var handler = new BasicAuthenticationSecurityTokenHandler(validationDelegate);
+            handler.RetainPassword = retainPassword;
+
+            configuration.AddMapping(new AuthenticationOptionMapping
+            {
+                TokenHandler = new SecurityTokenHandlerCollection { handler },
+                Options = AuthenticationOptions.ForAuthorizationHeader(scheme: "Basic"),
+                Scheme = AuthenticationScheme.SchemeAndRealm("Basic", realm)
+            });
         }
 
-        public static void AddBasicAuthentication(this AuthenticationConfiguration configuration, BasicAuthenticationSecurityTokenHandler.ValidateUserNameCredentialDelegate validationDelegate, bool retainPassword = false)
+        public static void AddBasicAuthentication(this AuthenticationConfiguration configuration, BasicAuthenticationSecurityTokenHandler.ValidateUserNameCredentialDelegate validationDelegate, AuthenticationOptions options, string realm = "localhost", bool retainPassword = false)
         {
             var handler = new BasicAuthenticationSecurityTokenHandler(validationDelegate)
                 {RetainPassword = retainPassword};
@@ -89,21 +156,21 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             configuration.AddMapping(new AuthenticationOptionMapping
             {
                 TokenHandler = new SecurityTokenHandlerCollection { handler },
-                Options = AuthenticationOptions.ForAuthorizationHeader(scheme: "Basic")
+                Options = options,
+                Scheme = AuthenticationScheme.SchemeAndRealm("Basic", realm)
             });
-
-            configuration.SetDefaultAuthenticationScheme("Basic");
         }
 
-        public static void AddBasicAuthentication(this AuthenticationConfiguration configuration, BasicAuthenticationSecurityTokenHandler.ValidateUserNameCredentialDelegate validationDelegate, AuthenticationOptions options, bool retainPassword = false)
+        public static void AddBasicAuthentication(this AuthenticationConfiguration configuration, Func<string, string, bool> validationDelegate, Func<string, string[]> roleDelegate, string realm = "localhost", bool retainPassword = false)
         {
-            var handler = new BasicAuthenticationSecurityTokenHandler(validationDelegate)
-                {RetainPassword = retainPassword};
+            var handler = new BasicAuthenticationWithRoleSecurityTokenHandler(validationDelegate, roleDelegate);
+            handler.RetainPassword = retainPassword;
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
                 TokenHandler = new SecurityTokenHandlerCollection { handler },
-                Options = options
+                Options = AuthenticationOptions.ForAuthorizationHeader(scheme: "Basic"),
+                Scheme = AuthenticationScheme.SchemeAndRealm("Basic", realm)
             });
         }
 
@@ -127,7 +194,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             });
         }
 
-        public static void AddSaml2(this AuthenticationConfiguration configuration, string issuerThumbprint, string issuerName, string audienceUri, X509CertificateValidator certificateValidator, AuthenticationOptions options)
+        public static void AddSaml2(this AuthenticationConfiguration configuration, string issuerThumbprint, string issuerName, string audienceUri, X509CertificateValidator certificateValidator, AuthenticationOptions options, AuthenticationScheme scheme)
         {
             var registry = new ConfigurationBasedIssuerNameRegistry();
             registry.AddTrustedIssuer(issuerThumbprint, issuerName);
@@ -137,17 +204,18 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             handlerConfig.IssuerNameRegistry = registry;
             handlerConfig.CertificateValidator = certificateValidator;
 
-            configuration.AddSaml2(handlerConfig, options);
+            configuration.AddSaml2(handlerConfig, options, scheme);
         }
 
-        public static void AddSaml2(this AuthenticationConfiguration configuration, SecurityTokenHandlerConfiguration handlerConfiguration, AuthenticationOptions options)
+        public static void AddSaml2(this AuthenticationConfiguration configuration, SecurityTokenHandlerConfiguration handlerConfiguration, AuthenticationOptions options, AuthenticationScheme scheme)
         {
             var handler = new HttpSaml2SecurityTokenHandler {Configuration = handlerConfiguration};
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
                 TokenHandler = new SecurityTokenHandlerCollection { handler },
-                Options = options
+                Options = options,
+                Scheme = scheme
             });
         }
 
@@ -161,5 +229,29 @@ namespace Thinktecture.IdentityModel.Tokens.Http
                 Options = options
             });
         }
+
+        // todo: think about integration strategy
+        //public static void AddHawkAuthentication(this AuthenticationConfiguration configuration, Func<string, Credential> credentialsCallback, bool allowBewit = false, Func<HttpResponseMessage, string> normalizationCallback = null, Func<HttpRequestMessage, string, bool> verificationCallback = null)
+        //{
+        //    var handler = new HawkSecurityTokenHandler(
+        //                    new HawkAuthenticationHandler(credentialsCallback,
+        //                                                    normalizationCallback, verificationCallback));
+
+        //    configuration.AddMapping(new AuthenticationOptionMapping
+        //    {
+        //        TokenHandler = new SecurityTokenHandlerCollection { handler },
+        //        Options = AuthenticationOptions.ForAuthorizationHeader(scheme: "hawk"),
+        //        Scheme = AuthenticationScheme.SchemeOnly("hawk")
+        //    });
+
+        //    if (allowBewit)
+        //    {
+        //        configuration.AddMapping(new AuthenticationOptionMapping
+        //        {
+        //            TokenHandler = new SecurityTokenHandlerCollection { handler },
+        //            Options = AuthenticationOptions.ForQueryString("bewit")
+        //        });
+        //    }
+        //}
     }
 }

@@ -1,10 +1,9 @@
 ﻿/*
- * Copyright (c) Dominick Baier.  All rights reserved.
+ * Copyright (c) Dominick Baier, Brock Allen.  All rights reserved.
  * see license.txt
  */
 
 using System;
-using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -16,7 +15,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
-using Thinktecture.IdentityModel.Diagnostics;
 
 namespace Thinktecture.IdentityModel.Tokens.Http
 {
@@ -24,9 +22,13 @@ namespace Thinktecture.IdentityModel.Tokens.Http
     {
         HttpAuthentication _authN;
 
-        public AuthenticationHandler(AuthenticationConfiguration configuration, HttpConfiguration httpConfiguration = null)
+        public const string PrincipalKey = "TT_Principal";
+
+        public AuthenticationHandler(AuthenticationConfiguration configuration, HttpConfiguration httpConfiguration = null) : this(new HttpAuthentication(configuration), httpConfiguration) {}
+
+        public AuthenticationHandler(HttpAuthentication authentication, HttpConfiguration httpConfiguration = null)
         {
-            _authN = new HttpAuthentication(configuration);
+            _authN = authentication;
 
             if (httpConfiguration != null)
             {
@@ -34,22 +36,24 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             }
         }
 
-        public AuthenticationHandler(AuthenticationConfiguration configuration, HttpMessageHandler innerHandler)
+        public AuthenticationHandler(AuthenticationConfiguration configuration, HttpMessageHandler innerHandler) : this(new HttpAuthentication(configuration), innerHandler) {}
+
+        public AuthenticationHandler(HttpAuthentication authentication, HttpMessageHandler innerHandler)
         {
-            _authN = new HttpAuthentication(configuration);
+            _authN = authentication;
             InnerHandler = innerHandler;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            Tracing.Start(Area.HttpAuthentication);
+            Tracing.Start("Web API AuthenticationHandler");
 
             // check SSL requirement
             if (_authN.Configuration.RequireSsl)
             {
                 if (request.RequestUri.Scheme != Uri.UriSchemeHttps)
                 {
-                    Tracing.Information(Area.HttpAuthentication, "Request rejected because it is not over HTTPS.");
+                    Tracing.Warning("Request rejected because it is not over HTTPS.");
 
                     var forbiddenResponse = request.CreateErrorResponse(HttpStatusCode.Forbidden, "HTTPS Required.");
                     forbiddenResponse.ReasonPhrase = "HTTPS Required.";
@@ -61,8 +65,13 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             // check if reuse of host client identity is allowed
             if (_authN.Configuration.InheritHostClientIdentity == false)
             {
-                Tracing.Verbose(Area.HttpAuthentication, "Host client identity is not inherited. Setting anonymous principal");
-                SetPrincipal(Principal.Anonymous);
+                Tracing.Verbose("Host client identity is not inherited. Setting anonymous principal");
+                SetPrincipal(request, Principal.Anonymous);
+            }
+            else
+            {
+                Tracing.Verbose("Host client identity is inherited. Setting current principal");
+                SetPrincipal(request, ClaimsPrincipal.Current);
             }
 
             ClaimsPrincipal principal;
@@ -75,7 +84,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
                 if (principal == null)
                 {
                     // this should never return null - check the corresponding handler!
-                    Tracing.Error(Area.HttpAuthentication, "Authentication returned null principal. Something is wrong!");
+                    Tracing.Error("Authentication returned null principal. Something is wrong!");
                     return SendUnauthorizedResponse(request);
                 }
             }
@@ -87,24 +96,24 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             catch (Exception ex)
             {
                 // something went wrong during authentication (e.g. invalid credentials)
-                Tracing.Error(Area.HttpAuthentication, "Exception while validating the token: " + ex.ToString());
+                Tracing.Error("Exception while validating the token: " + ex.ToString());
                 return SendUnauthorizedResponse(request);
             }
 
             // credential was found *and* authentication was successful
             if (principal.Identity.IsAuthenticated)
             {
-                Tracing.Verbose(Area.HttpAuthentication, "Authentication successful.");
+                Tracing.Verbose("Authentication successful.");
 
                 // check for token request - if yes send token back and return
                 if (_authN.IsSessionTokenRequest(request))
                 {
-                    Tracing.Information(Area.HttpAuthentication, "Request for session token.");
+                    Tracing.Information("Request for session token.");
                     return SendSessionTokenResponse(principal, request);
                 }
 
                 // else set the principal
-                SetPrincipal(principal);
+                SetPrincipal(request, principal);
             }
 
             // call service code
@@ -112,7 +121,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                SetAuthenticateHeader(response);
+                SetAuthenticateHeaders(response);
             }
 
             return response;
@@ -125,9 +134,9 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
             if (aex.StatusCode == HttpStatusCode.Unauthorized)
             {
-                SetAuthenticateHeader(response);
+                SetAuthenticateHeaders(response);
             }
-            
+
             return response;
         }
 
@@ -135,7 +144,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
         {
             var unauthorizedResponse = request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Unauthorized.");
 
-            SetAuthenticateHeader(unauthorizedResponse);
+            SetAuthenticateHeaders(unauthorizedResponse);
             unauthorizedResponse.ReasonPhrase = "Unauthorized.";
 
             return unauthorizedResponse;
@@ -151,26 +160,22 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             return response;
         }
 
-        protected virtual void SetAuthenticateHeader(HttpResponseMessage response, string scheme = null)
+        protected virtual void SetAuthenticateHeaders(HttpResponseMessage response)
         {
-            if (_authN.Configuration.SendWwwAuthenticateResponseHeader)
+            if (_authN.Configuration.SendWwwAuthenticateResponseHeaders)
             {
-                AuthenticationHeaderValue header;
-                if (!string.IsNullOrWhiteSpace(scheme))
+                foreach (var mapping in _authN.Configuration.Mappings)
                 {
-                    header = new AuthenticationHeaderValue(scheme);
+                    if (mapping.Scheme != null && !string.IsNullOrEmpty(mapping.Scheme.Scheme))
+                    {
+                        var header = new AuthenticationHeaderValue(mapping.Scheme.Scheme, mapping.Scheme.Challenge ?? "");
+                        response.Headers.WwwAuthenticate.Add(header);
+                    }
                 }
-                else
-                {
-                    header = new AuthenticationHeaderValue(_authN.Configuration.DefaultAuthenticationScheme);
-                }
-
-                Tracing.Verbose(Area.HttpAuthentication, "Setting Www-Authenticate header with scheme: " + header.Scheme);
-                response.Headers.WwwAuthenticate.Add(header);
             }
         }
 
-        protected virtual void SetPrincipal(ClaimsPrincipal principal)
+        protected virtual void SetPrincipal(HttpRequestMessage request, ClaimsPrincipal principal)
         {
             if (principal.Identity.IsAuthenticated)
             {
@@ -185,11 +190,11 @@ namespace Thinktecture.IdentityModel.Tokens.Http
                     name = principal.Claims.First().Value;
                 }
 
-                Tracing.Verbose(Area.HttpAuthentication, "Authentication successful for: " + name);
+                Tracing.Verbose("Principal set for: " + name);
             }
             else
             {
-                Tracing.Verbose(Area.HttpAuthentication, "Setting anonymous principal.");
+                Tracing.Verbose("Setting anonymous principal.");
             }
 
             Thread.CurrentPrincipal = principal;
@@ -197,6 +202,11 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             if (HttpContext.Current != null)
             {
                 HttpContext.Current.User = principal;
+            }
+
+            if (_authN.Configuration.SetPrincipalOnRequestInstance)
+            {
+                request.Properties[PrincipalKey] = principal;
             }
         }
     }

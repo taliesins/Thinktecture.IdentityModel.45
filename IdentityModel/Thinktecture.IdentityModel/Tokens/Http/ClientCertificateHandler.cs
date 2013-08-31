@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) Dominick Baier.  All rights reserved.
+ * Copyright (c) Dominick Baier, Brock Allen.  All rights reserved.
  * see license.txt
  */
 
@@ -23,7 +23,7 @@ namespace Thinktecture.IdentityModel.Tokens.Http
                 validator = X509CertificateValidator.ChainTrust;
                 registry = new ClientCertificateIssuerNameRegistry(false, mode);
             }
-            if (mode == ClientCertificateMode.ChainValidationWithIssuerSubjectName ||
+            else if (mode == ClientCertificateMode.ChainValidationWithIssuerSubjectName ||
                 mode == ClientCertificateMode.ChainValidationWithIssuerThumbprint)
             {
                 validator = X509CertificateValidator.ChainTrust;

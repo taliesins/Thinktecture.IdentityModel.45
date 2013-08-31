@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) Dominick Baier.  All rights reserved.
+ * Copyright (c) Dominick Baier, Brock Allen.  All rights reserved.
  * see license.txt
  */
 
@@ -20,13 +20,13 @@ namespace Thinktecture.IdentityModel.Tokens.Http
         private bool _hasClientCert;
 
         public List<AuthenticationOptionMapping> Mappings { get; set; }
-        public string DefaultAuthenticationScheme { get; set; }
-        public bool SendWwwAuthenticateResponseHeader { get; set; }
+        public bool SendWwwAuthenticateResponseHeaders { get; set; }
         public ClaimsAuthenticationManager ClaimsAuthenticationManager { get; set; }
         public bool InheritHostClientIdentity { get; set; }
         public bool EnableSessionToken { get; set; }
         public SessionTokenConfiguration SessionToken { get; set; }
         public bool RequireSsl { get; set; }
+        public bool SetPrincipalOnRequestInstance { get; set; }
 
         #region HasMapping Properties
         public bool HasAuthorizationHeaderMapping
@@ -58,15 +58,16 @@ namespace Thinktecture.IdentityModel.Tokens.Http
         public AuthenticationConfiguration()
         {
             Mappings = new List<AuthenticationOptionMapping>();
-            DefaultAuthenticationScheme = string.Empty;
-            SendWwwAuthenticateResponseHeader = true;
+            SendWwwAuthenticateResponseHeaders = true;
             InheritHostClientIdentity = true;
             RequireSsl = true;
+            SetPrincipalOnRequestInstance = true;
 
             EnableSessionToken = false;
             SessionToken = new SessionTokenConfiguration();
         }
 
+<<<<<<< HEAD
         public void SetDefaultAuthenticationScheme(string scheme)
         {
             if (string.IsNullOrWhiteSpace(DefaultAuthenticationScheme))
@@ -182,6 +183,8 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             });
         }
 
+=======
+>>>>>>> c154abaf6cee0048ae07fa1c54707f755a6af9d9
         public void AddMapping(AuthenticationOptionMapping mapping)
         {
             var hit = from m in Mappings

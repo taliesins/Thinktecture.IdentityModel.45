@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Js Basic Auth Sample</title>
+    <style>
+        body {
+            font-family:Arial;
+        }
+    </style>
+</head>
+<body>
+    <fieldset>
+        <legend>Basic Auth Login</legend>
+        <p>
+            <label for="username">Username</label>
+            <input id="username" value="bob" />
+        </p>
+        <p>
+            <label for="password">Password</label>
+            <input id="password" type="password" value="bob" />
+        </p>
+        <p>
+            <button id="basicButton">Use Basic Auth</button>
+            <button id="sessionButton">Use Session Token</button>
+        </p>
+    </fieldset>
+    
+    <ul></ul>
+    
+    <script src="Scripts/Base64.js"></script>
+    <script src="Scripts/jquery-1.9.1.js"></script>
+    <script>
+        $(function () {
+            $(document).ajaxError(function () {
+                log("error");
+                console.log("ajax error", xhr);
+            });
+
+            function log(msg) {
+                $("<li>").text(msg).appendTo("ul");
+            }
+
+            var baseUrl = '@Thinktecture.Samples.Constants.WebHostBaseAddress';
+            var identityUrl = baseUrl + 'identity';
+            var tokenUrl = baseUrl + 'token';
+
+            function HttpBasicClient(uid, pwd) {
+                this.scheme = "Basic";
+                this.token = Base64.encode(uid + ":" + pwd);
+            }
+            HttpBasicClient.prototype.get = function (url) {
+                var scheme = this.scheme;
+                var token = this.token;
+                var settings = {
+                    type: "GET",
+                    url: url,
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", scheme + " " + token);
+                    }
+                };
+                return $.ajax(settings);
+            }
+
+            function HttpSessionClient(uid, pwd) {
+                HttpBasicClient.call(this, uid, pwd);
+            }
+            HttpSessionClient.prototype = new HttpBasicClient();
+            HttpSessionClient.prototype.getToken = function(){
+                var that = this;
+                return this.get(tokenUrl).pipe(function(result){
+                    that.scheme = "Session";
+                    that.token = result.access_token;
+                });
+            };
+
+            function getClaims(client) {
+                client.get(identityUrl).done(function (result) {
+                    console.log(result);
+                    log("Claims");
+                    result.forEach(function (item) {
+                        log(item.Type + ", " + item.Value);
+                    });
+                });
+            }
+
+            $("#basicButton").click(function () {
+                var uid = $("#username").val();
+                var pwd = $("#password").val();
+                var client = new HttpBasicClient(uid, pwd);
+                getClaims(client);
+            });
+
+            $("#sessionButton").click(function () {
+                var $this = $(this);
+                var client = $this.data("client");
+                if (!client) {
+                    var uid = $("#username").val();
+                    var pwd = $("#password").val();
+                    client = new HttpSessionClient(uid, pwd);
+                    $this.data("client", client);
+                    client.getToken().done(function () {
+                        getClaims(client);
+                    });
+                }
+                else {
+                    getClaims(client);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
