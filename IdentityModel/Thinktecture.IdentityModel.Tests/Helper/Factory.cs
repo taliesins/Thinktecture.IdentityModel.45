@@ -100,7 +100,7 @@ namespace Tests
             }
 
             const string certificatePassword = "abc!123";
-            var cert = new X509Certificate2(certificatePath, certificatePassword);
+            var cert = new X509Certificate2(certificateFileInfo.FullName, certificatePassword);
             return new X509SigningCredentials(cert);
         }
     }
