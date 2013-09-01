@@ -16,7 +16,6 @@ _ReSharper.*/
 
 bin/
 obj/
-packages/
 *.suo
 *.csproj.user
 build/
