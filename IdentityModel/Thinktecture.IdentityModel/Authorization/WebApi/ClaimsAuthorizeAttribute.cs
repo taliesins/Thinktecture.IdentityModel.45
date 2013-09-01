@@ -5,8 +5,8 @@ namespace Thinktecture.IdentityModel.Authorization.WebApi
 {
     public class ClaimsAuthorizeAttribute : AuthorizeAttribute
     {
-        private string _action;
-        private string[] _resources;
+        private readonly string _action;
+        private readonly string[] _resources;
 
         public ClaimsAuthorizeAttribute()
         { }
@@ -23,10 +23,7 @@ namespace Thinktecture.IdentityModel.Authorization.WebApi
             {
                 return ClaimsAuthorization.CheckAccess(_action, _resources);
             }
-            else
-            {
-                return CheckAccess(actionContext);
-            }
+            return CheckAccess(actionContext);
         }
 
         protected virtual bool CheckAccess(HttpActionContext actionContext)

@@ -8,7 +8,7 @@ namespace Thinktecture.IdentityModel.Authorization.WebApi
 {
     public class ScopeAttribute : AuthorizeAttribute
     {
-        string[] _scopes;
+        readonly string[] _scopes;
         static string _scopeClaimType = "scope";
 
         public static string ScopeClaimType 

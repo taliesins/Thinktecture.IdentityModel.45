@@ -6,11 +6,11 @@ namespace Thinktecture.IdentityModel.Tokens
 {
     class JwtSecurityTokenHandlerWrapper : JwtSecurityTokenHandler
     {
-        TokenValidationParameters validationParams;
+        readonly TokenValidationParameters _validationParams;
 
         public JwtSecurityTokenHandlerWrapper(TokenValidationParameters validationParams, Dictionary<string, string> inboundClaimTypeMap = null)
         {
-            this.validationParams = validationParams;
+            _validationParams = validationParams;
 
             if (inboundClaimTypeMap != null)
             {
@@ -21,7 +21,7 @@ namespace Thinktecture.IdentityModel.Tokens
         public override System.Collections.ObjectModel.ReadOnlyCollection<System.Security.Claims.ClaimsIdentity> ValidateToken(SecurityToken token)
         {
             var jwt = token as JwtSecurityToken;
-            var list = new List<ClaimsIdentity>(this.ValidateToken(jwt, validationParams).Identities);
+            var list = new List<ClaimsIdentity>(this.ValidateToken(jwt, _validationParams).Identities);
             return list.AsReadOnly();
         }
     }

@@ -19,18 +19,22 @@ namespace Thinktecture.IdentityModel.Tokens.Http
         {
             configuration.AddMapping(new AuthenticationOptionMapping
             {
-                TokenHandler = new SecurityTokenHandlerCollection { handler },
+                TokenHandler = new SecurityTokenHandlerCollection
+                    {
+                        handler
+                    },
                 Options = options,
             });
         }
 
         public static void AddAccessKey(this AuthenticationConfiguration configuration, SimpleSecurityTokenHandler.ValidateTokenDelegate validateTokenDelegate, AuthenticationOptions options)
         {
-            
-
             configuration.AddMapping(new AuthenticationOptionMapping
             {
-                TokenHandler = new SecurityTokenHandlerCollection { new SimpleSecurityTokenHandler(validateTokenDelegate) },
+                TokenHandler = new SecurityTokenHandlerCollection
+                    {
+                        new SimpleSecurityTokenHandler(validateTokenDelegate)
+                    },
                 Options = options,
             });
         }
@@ -42,9 +46,30 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             string signingKey, 
             Dictionary<string, string> claimMappings = null)
         {
-            var validationParameters = new TokenValidationParameters()
+            var validationParameters = new TokenValidationParameters
+                {
+                    AllowedAudience = audience,
+                    SigningToken = new BinarySecretSecurityToken(Convert.FromBase64String(signingKey)),
+                    ValidIssuer = issuer,
+                };
+
+            configuration.AddJsonWebToken(
+                validationParameters,
+                AuthenticationOptions.ForAuthorizationHeader(JwtConstants.Bearer),
+                AuthenticationScheme.SchemeOnly(JwtConstants.Bearer),
+                claimMappings);
+        }
+
+        public static void AddJsonWebToken(
+            this AuthenticationConfiguration configuration,
+            string issuer,
+            string[] audiences,
+            string signingKey,
+            Dictionary<string, string> claimMappings = null)
+        {
+            var validationParameters = new TokenValidationParameters
             {
-                AllowedAudience = audience,
+                AllowedAudiences = audiences,
                 SigningToken = new BinarySecretSecurityToken(Convert.FromBase64String(signingKey)),
                 ValidIssuer = issuer,
             };
@@ -64,14 +89,41 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             string scheme,
             Dictionary<string, string> claimMappings = null)
         {
-            var validationParameters = new TokenValidationParameters()
+            var validationParameters = new TokenValidationParameters
             {
                 AllowedAudience = audience,
                 SigningToken = new BinarySecretSecurityToken(Convert.FromBase64String(signingKey)),
                 ValidIssuer = issuer,
             };
 
-            var handler = new SimpleWebTokenHandler {Configuration = config};
+            configuration.AddJsonWebToken(
+                validationParameters,
+                AuthenticationOptions.ForAuthorizationHeader(scheme),
+                AuthenticationScheme.SchemeOnly(scheme),
+                claimMappings);
+        }
+
+        public static void AddJsonWebToken(
+            this AuthenticationConfiguration configuration,
+            string issuer,
+            string[] audiences,
+            string signingKey,
+            string scheme,
+            Dictionary<string, string> claimMappings = null)
+        {
+            var validationParameters = new TokenValidationParameters
+            {
+                AllowedAudiences = audiences,
+                SigningToken = new BinarySecretSecurityToken(Convert.FromBase64String(signingKey)),
+                ValidIssuer = issuer,
+            };
+
+            configuration.AddJsonWebToken(
+                validationParameters,
+                AuthenticationOptions.ForAuthorizationHeader(scheme),
+                AuthenticationScheme.SchemeOnly(scheme),
+                claimMappings);
+        }
 
         public static void AddJsonWebToken(
             this AuthenticationConfiguration configuration, 
@@ -80,9 +132,30 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             X509Certificate2 signingCertificate, 
             Dictionary<string, string> claimMappings = null)
         {
-            var validationParameters = new TokenValidationParameters()
+            var validationParameters = new TokenValidationParameters
             {
                 AllowedAudience = audience,
+                SigningToken = new X509SecurityToken(signingCertificate),
+                ValidIssuer = issuer,
+            };
+
+            configuration.AddJsonWebToken(
+                validationParameters,
+                AuthenticationOptions.ForAuthorizationHeader(JwtConstants.Bearer),
+                AuthenticationScheme.SchemeOnly(JwtConstants.Bearer),
+                claimMappings);
+        }
+
+        public static void AddJsonWebToken(
+            this AuthenticationConfiguration configuration,
+            string issuer,
+            string[] audiences,
+            X509Certificate2 signingCertificate,
+            Dictionary<string, string> claimMappings = null)
+        {
+            var validationParameters = new TokenValidationParameters
+            {
+                AllowedAudiences = audiences,
                 SigningToken = new X509SecurityToken(signingCertificate),
                 ValidIssuer = issuer,
             };
@@ -102,9 +175,31 @@ namespace Thinktecture.IdentityModel.Tokens.Http
             string scheme,
             Dictionary<string, string> claimMappings = null)
         {
-            var validationParameters = new TokenValidationParameters()
+            var validationParameters = new TokenValidationParameters
             {
                 AllowedAudience = audience,
+                SigningToken = new X509SecurityToken(signingCertificate),
+                ValidIssuer = issuer,
+            };
+
+            configuration.AddJsonWebToken(
+                validationParameters,
+                AuthenticationOptions.ForAuthorizationHeader(scheme),
+                AuthenticationScheme.SchemeOnly(scheme),
+                claimMappings);
+        }
+
+        public static void AddJsonWebToken(
+            this AuthenticationConfiguration configuration,
+            string issuer,
+            string[] audiences,
+            X509Certificate2 signingCertificate,
+            string scheme,
+            Dictionary<string, string> claimMappings = null)
+        {
+            var validationParameters = new TokenValidationParameters
+            {
+                AllowedAudiences = audiences,
                 SigningToken = new X509SecurityToken(signingCertificate),
                 ValidIssuer = issuer,
             };
@@ -125,11 +220,12 @@ namespace Thinktecture.IdentityModel.Tokens.Http
         {
             var handler = new JwtSecurityTokenHandlerWrapper(validationParameters, claimMappings);
 
-            var handler = new JsonWebTokenHandler {Configuration = config};
-
             configuration.AddMapping(new AuthenticationOptionMapping
             {
-                TokenHandler = new SecurityTokenHandlerCollection { handler },
+                TokenHandler = new SecurityTokenHandlerCollection
+                    {
+                        handler
+                    },
                 Options = options,
                 Scheme = scheme
             });
@@ -137,12 +233,17 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public static void AddBasicAuthentication(this AuthenticationConfiguration configuration, BasicAuthenticationSecurityTokenHandler.ValidateUserNameCredentialDelegate validationDelegate, string realm = "localhost", bool retainPassword = false)
         {
-            var handler = new BasicAuthenticationSecurityTokenHandler(validationDelegate);
-            handler.RetainPassword = retainPassword;
+            var handler = new BasicAuthenticationSecurityTokenHandler(validationDelegate)
+                {
+                    RetainPassword = retainPassword
+                };
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
-                TokenHandler = new SecurityTokenHandlerCollection { handler },
+                TokenHandler = new SecurityTokenHandlerCollection
+                    {
+                        handler
+                    },
                 Options = AuthenticationOptions.ForAuthorizationHeader(scheme: "Basic"),
                 Scheme = AuthenticationScheme.SchemeAndRealm("Basic", realm)
             });
@@ -151,11 +252,16 @@ namespace Thinktecture.IdentityModel.Tokens.Http
         public static void AddBasicAuthentication(this AuthenticationConfiguration configuration, BasicAuthenticationSecurityTokenHandler.ValidateUserNameCredentialDelegate validationDelegate, AuthenticationOptions options, string realm = "localhost", bool retainPassword = false)
         {
             var handler = new BasicAuthenticationSecurityTokenHandler(validationDelegate)
-                {RetainPassword = retainPassword};
+                {
+                    RetainPassword = retainPassword
+                };
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
-                TokenHandler = new SecurityTokenHandlerCollection { handler },
+                TokenHandler = new SecurityTokenHandlerCollection
+                    {
+                        handler
+                    },
                 Options = options,
                 Scheme = AuthenticationScheme.SchemeAndRealm("Basic", realm)
             });
@@ -163,8 +269,10 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public static void AddBasicAuthentication(this AuthenticationConfiguration configuration, Func<string, string, bool> validationDelegate, Func<string, string[]> roleDelegate, string realm = "localhost", bool retainPassword = false)
         {
-            var handler = new BasicAuthenticationWithRoleSecurityTokenHandler(validationDelegate, roleDelegate);
-            handler.RetainPassword = retainPassword;
+            var handler = new BasicAuthenticationWithRoleSecurityTokenHandler(validationDelegate, roleDelegate)
+                {
+                    RetainPassword = retainPassword
+                };
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
@@ -178,7 +286,10 @@ namespace Thinktecture.IdentityModel.Tokens.Http
         {
             configuration.AddMapping(new AuthenticationOptionMapping
             {
-                TokenHandler = new SecurityTokenHandlerCollection { handler },
+                TokenHandler = new SecurityTokenHandlerCollection
+                    {
+                        handler
+                    },
                 Options = AuthenticationOptions.ForClientCertificate()
             });
         }
@@ -189,7 +300,10 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
-                TokenHandler = new SecurityTokenHandlerCollection { handler },
+                TokenHandler = new SecurityTokenHandlerCollection
+                    {
+                        handler
+                    },
                 Options = AuthenticationOptions.ForClientCertificate()
             });
         }
@@ -209,7 +323,10 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public static void AddSaml2(this AuthenticationConfiguration configuration, SecurityTokenHandlerConfiguration handlerConfiguration, AuthenticationOptions options, AuthenticationScheme scheme)
         {
-            var handler = new HttpSaml2SecurityTokenHandler {Configuration = handlerConfiguration};
+            var handler = new HttpSaml2SecurityTokenHandler
+                {
+                    Configuration = handlerConfiguration
+                };
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
@@ -221,11 +338,17 @@ namespace Thinktecture.IdentityModel.Tokens.Http
 
         public static void AddSaml11(this AuthenticationConfiguration configuration, SecurityTokenHandlerConfiguration handlerConfiguration, AuthenticationOptions options)
         {
-            var handler = new HttpSamlSecurityTokenHandler {Configuration = handlerConfiguration};
+            var handler = new HttpSamlSecurityTokenHandler
+                {
+                    Configuration = handlerConfiguration
+                };
 
             configuration.AddMapping(new AuthenticationOptionMapping
             {
-                TokenHandler = new SecurityTokenHandlerCollection { handler },
+                TokenHandler = new SecurityTokenHandlerCollection
+                    {
+                        handler
+                    },
                 Options = options
             });
         }
