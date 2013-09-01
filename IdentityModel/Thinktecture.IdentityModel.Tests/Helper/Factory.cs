@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IdentityModel.Selectors;
 using System.IdentityModel.Tokens;
+using System.IO;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
@@ -90,7 +91,10 @@ namespace Tests
 
         private static SigningCredentials GetSamlSigningCredential()
         {
-            var cert = new X509Certificate2("test.pfx", "abc!123");
+            var currentDirectory = Path.GetDirectoryName(typeof(Factory).Assembly.FullName);
+            var certificatePath = Path.Combine(currentDirectory, "test.pfx");
+            const string certificatePassword = "abc!123";
+            var cert = new X509Certificate2(certificatePath, certificatePassword);
             return new X509SigningCredentials(cert);
         }
     }
