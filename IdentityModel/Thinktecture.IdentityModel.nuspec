@@ -37,6 +37,5 @@
   <files>
     <file src="build\release\Thinktecture.IdentityModel.dll" target="lib/net45" />
     <file src="build\release\Thinktecture.IdentityModel.pdb" target="lib/net45" />
-    <file src="build\release\Thinktecture.IdentityModel.xml" target="lib/net45" />
   </files>
 </package>
