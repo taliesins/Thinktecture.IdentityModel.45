@@ -3,6 +3,7 @@ using System.IdentityModel.Selectors;
 using System.IdentityModel.Tokens;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Web.Http;
@@ -96,12 +97,23 @@ namespace Tests
 
             if (!certificateFileInfo.Exists)
             {
-                throw new FileNotFoundException("Cannot find certificate - " + certificateFileInfo.FullName, certificateFileInfo.FullName);
+                WriteResourceToFile("Thinktecture.IdentityModel.Tests.test.pfx", certificateFileInfo.FullName);
             }
 
             const string certificatePassword = "abc!123";
             var cert = new X509Certificate2(certificateFileInfo.FullName, certificatePassword);
             return new X509SigningCredentials(cert);
+        }
+
+        public static void WriteResourceToFile(string resourceName, string fileName)
+        {
+            using (var s = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+            {
+                using (var fs = File.Open(fileName, FileMode.Create))
+                {
+                    s.CopyTo(fs);
+                }
+            }
         }
     }
 }
