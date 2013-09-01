@@ -92,7 +92,13 @@ namespace Tests
         private static SigningCredentials GetSamlSigningCredential()
         {
             var currentDirectory = Path.GetDirectoryName(typeof(Factory).Assembly.FullName);
-            var certificatePath = Path.Combine(currentDirectory, "test.pfx");
+            var certificateFileInfo = new FileInfo(Path.Combine(currentDirectory, "test.pfx"));
+
+            if (!certificateFileInfo.Exists)
+            {
+                throw new FileNotFoundException("Cannot find certificate - " + certificateFileInfo.FullName, certificateFileInfo.FullName);
+            }
+
             const string certificatePassword = "abc!123";
             var cert = new X509Certificate2(certificatePath, certificatePassword);
             return new X509SigningCredentials(cert);
