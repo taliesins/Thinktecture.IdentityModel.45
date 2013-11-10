@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
-using Thinktecture.IdentityModel.Http.Hawk.Core;
 using Thinktecture.IdentityModel.Http.Hawk.Core.Helpers;
 using Thinktecture.IdentityModel.Http.Hawk.Core.MessageContracts;
 

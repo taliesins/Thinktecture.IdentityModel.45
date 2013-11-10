@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Thinktecture.IdentityModel.Http.Hawk.Client;
 using Thinktecture.IdentityModel.Http.Hawk.Core;
-using Thinktecture.IdentityModel.Http.Hawk.Core.Helpers;
 using Thinktecture.IdentityModel.Http.Hawk.Core.MessageContracts;
 
 namespace Thinktecture.IdentityModel.Tests.HttpAuthentication.Hawk.IntegrationTests.Helpers

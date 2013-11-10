@@ -6,7 +6,6 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Thinktecture.IdentityModel.Http.Hawk.Client;
 using Thinktecture.IdentityModel.Http.Hawk.Core.Extensions;
 using Thinktecture.IdentityModel.Http.Hawk.Core.Helpers;
 using Thinktecture.IdentityModel.Http.Hawk.WebApi;

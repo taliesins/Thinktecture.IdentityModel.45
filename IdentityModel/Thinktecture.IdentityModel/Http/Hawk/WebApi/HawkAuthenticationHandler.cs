@@ -2,12 +2,12 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.ServiceModel.Channels;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Thinktecture.IdentityModel.Http.Hawk.Core;
 using Thinktecture.IdentityModel.Http.Hawk.Core.Helpers;
-using Thinktecture.IdentityModel.Http.Hawk.Core.MessageContracts;
 
 namespace Thinktecture.IdentityModel.Http.Hawk.WebApi
 {
@@ -38,7 +38,7 @@ namespace Thinktecture.IdentityModel.Http.Hawk.WebApi
 
             try
             {
-                HawkServer server = new HawkServer(new WebApiRequestMessage(request), options);
+                var server = new HawkServer(new WebApiRequestMessage(request), options);
 
                 var principal = await server.AuthenticateAsync();
 
@@ -47,7 +47,17 @@ namespace Thinktecture.IdentityModel.Http.Hawk.WebApi
                     Thread.CurrentPrincipal = principal;
 
                     if (HttpContext.Current != null)
+                    {
                         HttpContext.Current.User = principal;
+                    }
+
+                    request.SetUserPrincipal(principal);
+              
+                    var requestContext = request.Properties["MS_RequestContext"] as System.Web.Http.Controllers.HttpRequestContext;
+                    if (requestContext != null)
+                    {
+                        requestContext.Principal = principal;
+                    }
 
                     Tracing.Verbose("Authentication Successful and principal set for " + principal.Identity.Name);
                 }
